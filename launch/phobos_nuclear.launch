@@ -3,9 +3,10 @@
 <launch>
     <!-- SETUP ARGUMENTS -->
     <!-- enable/disable rviz -->
-    <arg name="rviz" default="true" />
+    <arg name="rviz" default="false" />
     <!-- enable/disable calibration -->
     <arg name="calibrate" default="false"/>
+    <arg name="split_laser" default="true"/>
     
     <arg name="camera_name" default="phobos_nuclear"/>
 
@@ -19,28 +20,42 @@
     
     <!-- STEREO CAPTURE -->
     <include file="$(find i3dr_stereo_camera)/launch/stereo_capture.launch">
-        <!-- Be sure to change this to your cameras serials -->
+        <!-- 0=TIS, 1=Basler -->
+        <arg name="cameratype" default="1"/>
         <arg name="camera_namespace" value="$(arg camera_name)"/>
+        <!-- Be sure to change this to your cameras serials -->
+        <!--
         <arg name="camera_right_serial" value="31710277"/>
         <arg name="camera_left_serial" value="31710260"/>
+        -->
+        <arg name="camera_right_serial" value="phobos_nuclear_r"/>
+        <arg name="camera_left_serial" value="phobos_nuclear_l"/>
+        <!--
         <arg name="frame_width" default="1920"/>
         <arg name="frame_height" default="1080"/>
-        <arg name="exposure" value="30000"/>
+        -->
+        <arg name="exposure" value="50000"/>
         <arg name="gain" value="0"/>
         <arg name="fps" value="1"/>
     </include>
 
     <!-- STEREO CALIBRATION -->
     <include if="$(arg calibrate)" file="$(find i3dr_stereo_camera)/launch/stereo_calibration.launch">
-        <arg name="camera_namespace" value="$(arg camera_name)"/>
+        <arg if="$(arg split_laser)" name="camera_namespace" value="$(arg camera_name)/non_laser"/>
+        <arg unless="$(arg split_laser)" name="camera_namespace" value="$(arg camera_name)"/>
     </include>
+
+    <node if="$(arg split_laser)" ns="phobos_nuclear" pkg="i3dr_stereo_camera" type="split_laser_frames" name="i3dr_split_laser_frames" output="screen">
+    </node>
 
     <!-- STEREO MATCHER -->
     <include file="$(find i3dr_stereo_camera)/launch/stereo_matcher.launch">
-        <arg name="use_i3dr_matcher" value="false"/>
+        <arg name="use_i3dr_matcher" value="true"/>
 
         <!-- enable/disable gui for stereo matching parameters -->
-        <arg name="camera_namespace" value="$(arg camera_name)"/>
+        <arg name="camera_name" value="$(arg camera_name)"/>
+        <arg if="$(arg split_laser)" name="camera_namespace" value="$(arg camera_name)/with_laser"/>
+        <arg unless="$(arg split_laser)" name="camera_namespace" value="$(arg camera_name)"/>
         <arg name="gui" value="false"/>
         <arg name="stereo_algorithm" value="0" />
         <arg name="min_disparity" value="0" />
@@ -50,6 +65,13 @@
         <arg name="speckle_range" value="4" />
         <arg name="speckle_size" value="1000" />
     </include>
+
+    <group if="$(arg split_laser)">
+        <node pkg="image_proc" type="image_proc" ns="$(arg camera_name)/non_laser/right" name="rectify_non_laser_right" output="screen">
+        </node>
+        <node pkg="image_proc" type="image_proc" ns="$(arg camera_name)/non_laser/left" name="rectify_non_laser_left" output="screen">
+        </node>
+    </group>
 
     <!-- DISPLAY -->
     <!-- run rviz with config file -->
