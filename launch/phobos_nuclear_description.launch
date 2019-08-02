@@ -1,0 +1,9 @@
+<launch>
+
+    <!-- SETUP ROBOT MODEL -->
+    <include file="$(find i3dr_stereo_camera)/launch/stereo_description.launch">
+        <arg name="camera_name" value="phobos_nuclear"/>
+        <arg name="rviz" value="true"/>
+    </include>
+
+</launch>
