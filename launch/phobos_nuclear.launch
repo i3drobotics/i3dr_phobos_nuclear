@@ -39,8 +39,8 @@
 
     <!-- STEREO CALIBRATION -->
     <include if="$(arg calibrate)" file="$(find i3dr_stereo_camera)/launch/stereo_calibration.launch">
-        <arg if="$(arg split_laser)" name="camera_namespace" value="$(arg camera_name)/non_laser"/>
-        <arg unless="$(arg split_laser)" name="camera_namespace" value="$(arg camera_name)"/>
+        <arg if="$(arg split_laser)" name="camera_non_laser_namespace" value="$(arg camera_name)/non_laser"/>
+        <arg name="camera_namespace" value="$(arg camera_name)"/>
     </include>
 
     <node if="$(arg split_laser)" ns="phobos_nuclear" pkg="i3dr_stereo_camera" type="split_laser_frames" name="i3dr_split_laser_frames" output="screen">
