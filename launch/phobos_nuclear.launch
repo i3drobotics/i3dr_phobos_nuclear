@@ -13,7 +13,7 @@
     <!-- SETUP ROBOT MODEL -->
     <include file="$(find i3dr_stereo_camera)/launch/stereo_description.launch">
         <arg name="camera_name" value="$(arg camera_name)"/>
-        <arg name="rviz" value="true"/>
+        <arg name="rviz" value="false"/>
     </include>
     
     <!-- STEREO CAPTURE -->
@@ -32,19 +32,16 @@
         <arg name="frame_width" default="1920"/>
         <arg name="frame_height" default="1080"/>
         -->
-        <arg name="exposure" value="10000"/>
+        <arg name="exposure" value="20000"/>
         <arg name="gain" value="0"/>
         <arg name="fps" value="1"/>
     </include>
 
     <!-- STEREO CALIBRATION -->
     <include if="$(arg calibrate)" file="$(find i3dr_stereo_camera)/launch/stereo_calibration.launch">
-        <arg if="$(arg split_laser)" name="camera_non_laser_namespace" value="$(arg camera_name)/non_laser"/>
+        <arg name="split_laser" value="$(arg split_laser)"/>
         <arg name="camera_namespace" value="$(arg camera_name)"/>
     </include>
-
-    <node if="$(arg split_laser)" ns="phobos_nuclear" pkg="i3dr_stereo_camera" type="split_laser_frames" name="i3dr_split_laser_frames" output="screen">
-    </node>
 
     <!-- STEREO MATCHER -->
     <include file="$(find i3dr_stereo_camera)/launch/stereo_matcher.launch">
@@ -52,8 +49,8 @@
 
         <!-- enable/disable gui for stereo matching parameters -->
         <arg name="camera_name" value="$(arg camera_name)"/>
-        <arg if="$(arg split_laser)" name="camera_namespace" value="$(arg camera_name)/with_laser"/>
-        <arg unless="$(arg split_laser)" name="camera_namespace" value="$(arg camera_name)"/>
+        <arg name="camera_namespace" value="$(arg camera_name)"/>
+        <arg name="split_laser" value="$(arg split_laser")/>
         <arg name="gui" value="false"/>
         <arg name="stereo_algorithm" value="0" />
         <arg name="min_disparity" value="0" />
@@ -65,9 +62,11 @@
     </include>
 
     <group if="$(arg split_laser)">
-        <node pkg="image_proc" type="image_proc" ns="$(arg camera_name)/non_laser/right" name="rectify_non_laser_right" output="screen">
+        <node pkg="image_proc" type="image_proc" ns="$(arg camera_name)" name="rectify_non_laser_right" output="screen">
+            <remap from="image_raw" to="image_raw_no_laser"/>
         </node>
-        <node pkg="image_proc" type="image_proc" ns="$(arg camera_name)/non_laser/left" name="rectify_non_laser_left" output="screen">
+        <node pkg="image_proc" type="image_proc" ns="$(arg camera_name)" name="rectify_non_laser_left" output="screen">
+            <remap from="image_raw" to="image_raw_no_laser"/>
         </node>
     </group>
 

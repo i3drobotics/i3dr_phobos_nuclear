@@ -49,11 +49,9 @@ Copyright (c) 2019, I3D Robotics Ltd.
                         <box size="${length} ${width} ${height}"/>
                     </xacro:if>
                 </geometry>
-                <xacro:if value="${(en_mesh == 'false')}">
-                    <material name="${camera_name}_camera_colour">
-                        <color rgba="0.1 0.1 0.1 1"/>
-                    </material>
-                </xacro:if>
+                <material name="${camera_name}_camera_colour">
+                    <color rgba="0.1 0.1 0.1 1"/>
+                </material>
             </visual>
         </link>
 
