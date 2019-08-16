@@ -7,6 +7,7 @@
     <!-- enable/disable calibration -->
     <arg name="calibrate" default="false"/>
     <arg name="split_laser" default="true"/>
+    <arg name="stereo_match" default="true"/>
     
     <arg name="camera_name" default="phobos_nuclear"/>
 
@@ -44,13 +45,13 @@
     </include>
 
     <!-- STEREO MATCHER -->
-    <include file="$(find i3dr_stereo_camera)/launch/stereo_matcher.launch">
+    <include if="$(arg stereo_match)" file="$(find i3dr_stereo_camera)/launch/stereo_matcher.launch">
         <arg name="use_i3dr_matcher" value="true"/>
 
         <!-- enable/disable gui for stereo matching parameters -->
         <arg name="camera_name" value="$(arg camera_name)"/>
         <arg name="camera_namespace" value="$(arg camera_name)"/>
-        <arg name="split_laser" value="$(arg split_laser")/>
+        <arg name="split_laser" value="$(arg split_laser)"/>
         <arg name="gui" value="false"/>
         <arg name="stereo_algorithm" value="0" />
         <arg name="min_disparity" value="0" />
@@ -60,13 +61,24 @@
         <arg name="speckle_range" value="4" />
         <arg name="speckle_size" value="1000" />
     </include>
-
+    
     <group if="$(arg split_laser)">
-        <node pkg="image_proc" type="image_proc" ns="$(arg camera_name)" name="rectify_non_laser_right" output="screen">
+        <!-- Rectify no laser images that aren't used to generate 3D (so rectifiy isn't created) -->
+        <node pkg="image_proc" type="image_proc" ns="$(arg camera_name)/right" name="rectify_non_laser_right" output="screen">
             <remap from="image_raw" to="image_raw_no_laser"/>
+
+            <remap from="image_color" to="image_color_no_laser"/>
+            <remap from="image_mono" to="image_mono_no_laser"/>
+            <remap from="image_rect" to="image_rect_no_laser"/>
+            <remap from="image_rect_color" to="image_rect_color_no_laser"/>
         </node>
-        <node pkg="image_proc" type="image_proc" ns="$(arg camera_name)" name="rectify_non_laser_left" output="screen">
+        <node pkg="image_proc" type="image_proc" ns="$(arg camera_name)/left" name="rectify_non_laser_left" output="screen">
             <remap from="image_raw" to="image_raw_no_laser"/>
+
+            <remap from="image_color" to="image_color_no_laser"/>
+            <remap from="image_mono" to="image_mono_no_laser"/>
+            <remap from="image_rect" to="image_rect_no_laser"/>
+            <remap from="image_rect_color" to="image_rect_color_no_laser"/>
         </node>
     </group>
 
