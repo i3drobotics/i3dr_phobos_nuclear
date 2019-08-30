@@ -29,7 +29,7 @@
         -->
         <arg name="camera_right_serial" value="phobos_nuclear_r"/>
         <arg name="camera_left_serial" value="phobos_nuclear_l"/>
-        <arg name="exposure" value="80000"/>
+        <arg name="exposure" value="20000"/>
         <arg name="gain" value="0"/>
         <arg name="fps" value="1"/>
         <arg name="split_laser" value="$(arg split_laser)"/>
@@ -65,22 +65,12 @@
     
     <group if="$(arg split_laser)">
         <!-- Rectify no laser images that aren't used to generate 3D (so rectifiy isn't created) -->
-        <node pkg="image_proc" type="image_proc" ns="$(arg camera_name)/right" name="rectify_non_laser_right" output="screen">
-            <remap from="image_raw" to="image_raw_no_laser"/>
-
-            <remap from="image_color" to="image_color_no_laser"/>
-            <remap from="image_mono" to="image_mono_no_laser"/>
-            <remap from="image_rect" to="image_rect_no_laser"/>
-            <remap from="image_rect_color" to="image_rect_color_no_laser"/>
-        </node>
-        <node pkg="image_proc" type="image_proc" ns="$(arg camera_name)/left" name="rectify_non_laser_left" output="screen">
-            <remap from="image_raw" to="image_raw_no_laser"/>
-
-            <remap from="image_color" to="image_color_no_laser"/>
-            <remap from="image_mono" to="image_mono_no_laser"/>
-            <remap from="image_rect" to="image_rect_no_laser"/>
-            <remap from="image_rect_color" to="image_rect_color_no_laser"/>
-        </node>
+        <node pkg="i3dr_stereo_camera" type="rectify" ns="$(arg camera_namespace)" name="rectify_non_laser" output="screen">
+        <remap from="left/image_raw" to="left/image_raw_no_laser"/>
+        <remap from="right/image_raw" to="right/image_raw_no_laser"/>
+        <remap from="left/image_rect" to="left/image_rect_no_laser"/>
+        <remap from="right/image_rect" to="right/image_rect_no_laser"/>
+      </node>
     </group>
 
     <!-- DISPLAY -->
