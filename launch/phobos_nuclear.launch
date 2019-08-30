@@ -20,7 +20,7 @@
     <!-- STEREO CAPTURE -->
     <include file="$(find i3dr_stereo_camera)/launch/stereo_capture.launch">
         <!-- 0=TIS, 1=Basler -->
-        <arg name="cameratype" default="1"/>
+        <arg name="cameratype" value="1"/>
         <arg name="camera_namespace" value="$(arg camera_name)"/>
         <!-- Be sure to change this to your cameras serials -->
         <!--
@@ -29,13 +29,13 @@
         -->
         <arg name="camera_right_serial" value="phobos_nuclear_r"/>
         <arg name="camera_left_serial" value="phobos_nuclear_l"/>
-        <!--
-        <arg name="frame_width" default="1920"/>
-        <arg name="frame_height" default="1080"/>
-        -->
-        <arg name="exposure" value="20000"/>
+        <arg name="exposure" value="80000"/>
         <arg name="gain" value="0"/>
         <arg name="fps" value="1"/>
+        <arg name="split_laser" value="$(arg split_laser)"/>
+
+        <arg name="camera_info_right" value="file://$(find iind_calibration)/calibration/phobos_nuclear/2019-08-29-I3DR/phobos_nuclear_right.yaml" />
+        <arg name="camera_info_left" value="file://$(find iind_calibration)/calibration/phobos_nuclear/2019-08-29-I3DR/phobos_nuclear_left.yaml" />
     </include>
 
     <!-- STEREO CALIBRATION -->
@@ -52,14 +52,15 @@
         <arg name="camera_name" value="$(arg camera_name)"/>
         <arg name="camera_namespace" value="$(arg camera_name)"/>
         <arg name="split_laser" value="$(arg split_laser)"/>
-        <arg name="gui" value="false"/>
+        <arg name="gui" value="true"/>
         <arg name="stereo_algorithm" value="0" />
         <arg name="min_disparity" value="0" />
-        <arg name="disparity_range" value="416" />
-        <arg name="correlation_window_size" value="25" />
+        <arg name="disparity_range" value="128" />
+        <arg name="correlation_window_size" value="21" />
         <arg name="uniqueness_ratio" value="6" />
         <arg name="speckle_range" value="4" />
         <arg name="speckle_size" value="1000" />
+        <arg name="interp" value="false" />
     </include>
     
     <group if="$(arg split_laser)">
