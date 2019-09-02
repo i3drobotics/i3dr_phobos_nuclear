@@ -6,36 +6,51 @@
     <arg name="rviz" default="false" />
     <!-- enable/disable calibration -->
     <arg name="calibrate" default="false"/>
+    <!-- is camera with split laser functionality being used -->
     <arg name="split_laser" default="true"/>
+    <!-- enable/disbale stereo matching (3D generation) -->
     <arg name="stereo_match" default="true"/>
+    <!-- 0=TIS, 1=Basler -->
+    <arg name="camera_type" default="0"/>
+    <!-- namespace for camera -->
+    <arg name="camera_namespace" default="phobos_nuclear"/>
+
+    <!-- Be sure to change this to your cameras id -->
+    <!-- TIS -->
+    <arg if="$(eval camera_type == 0)" name="camera_right_serial" default="31710277"/>
+    <arg if="$(eval camera_type == 0)" name="camera_left_serial" default="31710260"/>
+    <!-- Basler -->
+    <arg if="$(eval camera_type == 1)" name="camera_right_serial" default="phobos_nuclear_r"/>
+    <arg if="$(eval camera_type == 1)" name="camera_left_serial" default="phobos_nuclear_l"/>
     
-    <arg name="camera_name" default="phobos_nuclear"/>
+    <!-- this should not change as it is the namespace of frames in the urdf-->
+    <arg name="urdf_namespace" value="phobos_nuclear"/>
 
     <!-- SETUP ROBOT MODEL -->
-    <include file="$(find i3dr_stereo_camera)/launch/stereo_description.launch">
-        <arg name="camera_name" value="$(arg camera_name)"/>
-        <arg name="rviz" value="false"/>
-    </include>
+    <param name="$(arg urdf_namespace)_robot_description" command="$(find xacro)/xacro '$(find i3dr_deimos)/urdf/deimos_scene.urdf.xacro'" />
+    <node name="robot_state_publisher_deimos" pkg="robot_state_publisher" type="state_publisher">
+        <remap from="robot_description" to="$(arg urdf_namespace)_robot_description"/>
+    </node>
     
     <!-- STEREO CAPTURE -->
     <include file="$(find i3dr_stereo_camera)/launch/stereo_capture.launch">
-        <!-- 0=TIS, 1=Basler -->
-        <arg name="cameratype" value="1"/>
-        <arg name="camera_namespace" value="$(arg camera_name)"/>
-        <!-- Be sure to change this to your cameras serials -->
-        <!--
-        <arg name="camera_right_serial" value="31710277"/>
-        <arg name="camera_left_serial" value="31710260"/>
-        -->
-        <arg name="camera_right_serial" value="phobos_nuclear_r"/>
-        <arg name="camera_left_serial" value="phobos_nuclear_l"/>
+        <!-- camera startup settings -->
         <arg name="exposure" value="20000"/>
         <arg name="gain" value="0"/>
         <arg name="fps" value="1"/>
-        <arg name="split_laser" value="$(arg split_laser)"/>
-
+        <!-- camera calibration files-->
         <arg name="camera_info_right" value="file://$(find iind_calibration)/calibration/phobos_nuclear/2019-08-29-I3DR/phobos_nuclear_right.yaml" />
         <arg name="camera_info_left" value="file://$(find iind_calibration)/calibration/phobos_nuclear/2019-08-29-I3DR/phobos_nuclear_left.yaml" />
+        <!-- frame id -->
+        <arg name="frame_id" value="$(arg urdf_namespace)_depth_optical_frame" />
+
+        <!-- 0=TIS, 1=Basler -->
+        <arg name="camera_type" value="$(arg camera_type)"/>
+
+        <arg name="camera_namespace" value="$(arg camera_namespace)"/>
+        <arg name="camera_right_serial" value="$(arg camera_right_serial)"/>
+        <arg name="camera_left_serial" value="$(arg camera_left_serial)"/>
+        <arg name="split_laser" value="$(arg split_laser)"/>
     </include>
 
     <!-- STEREO CALIBRATION -->
@@ -48,30 +63,33 @@
     <include if="$(arg stereo_match)" file="$(find i3dr_stereo_camera)/launch/stereo_matcher.launch">
         <arg name="use_i3dr_matcher" value="true"/>
 
-        <!-- enable/disable gui for stereo matching parameters -->
-        <arg name="camera_name" value="$(arg camera_name)"/>
-        <arg name="camera_namespace" value="$(arg camera_name)"/>
-        <arg name="split_laser" value="$(arg split_laser)"/>
-        <arg name="gui" value="true"/>
+        <!-- Matcher Parameters -->
+        <!-- see link below for details on matcher parameters -->
+        <!-- http://wiki.ros.org/stereo_image_proc/Tutorials/ChoosingGoodStereoParameters -->
+        <!-- algorithm 0: OpenCV block -->
+        <!-- algorithm 1: OpenCV SGBM -->
+        <!-- algorithm 2: JR SGM -->
         <arg name="stereo_algorithm" value="0" />
         <arg name="min_disparity" value="0" />
         <arg name="disparity_range" value="128" />
         <arg name="correlation_window_size" value="21" />
         <arg name="uniqueness_ratio" value="6" />
+        <arg name="texture_threshol" value="1" />
         <arg name="speckle_range" value="4" />
         <arg name="speckle_size" value="1000" />
+        <arg name="p1" value="200"/>
+        <arg name="p2" value="400"/>
         <arg name="interp" value="false" />
+
+        <!-- maximum depth value (m) -->
+        <!-- reduce this if RTabMap is showing flat image in back of 3D -->
+        <arg name="depth_max" default="3" />
+
+        <arg name="gui" value="true"/>
+        <arg name="split_laser" value="$(arg split_laser)"/>
+        <arg name="camera_namespace" value="$(arg camera_namespace)"/>
+        <arg name="frame_id" value="$(arg urdf_namespace)_depth_optical_frame" />
     </include>
-    
-    <group if="$(arg split_laser)">
-        <!-- Rectify no laser images that aren't used to generate 3D (so rectifiy isn't created) -->
-        <node pkg="i3dr_stereo_camera" type="rectify" ns="$(arg camera_namespace)" name="rectify_non_laser" output="screen">
-        <remap from="left/image_raw" to="left/image_raw_no_laser"/>
-        <remap from="right/image_raw" to="right/image_raw_no_laser"/>
-        <remap from="left/image_rect" to="left/image_rect_no_laser"/>
-        <remap from="right/image_rect" to="right/image_rect_no_laser"/>
-      </node>
-    </group>
 
     <!-- DISPLAY -->
     <!-- run rviz with config file -->
