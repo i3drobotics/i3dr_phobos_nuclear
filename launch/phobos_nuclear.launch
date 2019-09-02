@@ -77,6 +77,8 @@
         <arg name="texture_threshol" value="1" />
         <arg name="speckle_range" value="4" />
         <arg name="speckle_size" value="1000" />
+        <arg name="prefilter_size" value="147" />
+        <arg name="prefilter_cap" value="7" />
         <arg name="p1" value="200"/>
         <arg name="p2" value="400"/>
         <arg name="interp" value="false" />
