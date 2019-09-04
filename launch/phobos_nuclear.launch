@@ -57,6 +57,8 @@
     <include if="$(arg calibrate)" file="$(find i3dr_stereo_camera)/launch/stereo_calibration.launch">
         <arg name="split_laser" value="$(arg split_laser)"/>
         <arg name="camera_namespace" value="$(arg camera_name)"/>
+        <arg name="multi_board" value="true" />
+        <arg name="grid_rows" value="8" />
     </include>
 
     <!-- STEREO MATCHER -->
@@ -70,18 +72,6 @@
         <!-- algorithm 1: OpenCV SGBM -->
         <!-- algorithm 2: JR SGM -->
         <arg name="stereo_algorithm" value="0" />
-        <arg name="min_disparity" value="0" />
-        <arg name="disparity_range" value="128" />
-        <arg name="correlation_window_size" value="21" />
-        <arg name="uniqueness_ratio" value="6" />
-        <arg name="texture_threshold" value="1" />
-        <arg name="speckle_range" value="4" />
-        <arg name="speckle_size" value="1000" />
-        <arg name="prefilter_size" value="147" />
-        <arg name="prefilter_cap" value="7" />
-        <arg name="p1" value="200"/>
-        <arg name="p2" value="400"/>
-        <arg name="interp" value="false" />
 
         <!-- maximum depth value (m) -->
         <!-- reduce this if RTabMap is showing flat image in back of 3D -->
