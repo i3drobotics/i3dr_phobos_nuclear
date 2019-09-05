@@ -11,7 +11,7 @@
     <!-- enable/disbale stereo matching (3D generation) -->
     <arg name="stereo_match" default="true"/>
     <!-- 0=TIS, 1=Basler -->
-    <arg name="camera_type" default="0"/>
+    <arg name="camera_type" default="1"/>
     <!-- namespace for camera -->
     <arg name="camera_namespace" default="phobos_nuclear"/>
 
@@ -27,15 +27,15 @@
     <arg name="urdf_namespace" value="phobos_nuclear"/>
 
     <!-- SETUP ROBOT MODEL -->
-    <param name="$(arg urdf_namespace)_robot_description" command="$(find xacro)/xacro '$(find i3dr_deimos)/urdf/deimos_scene.urdf.xacro'" />
-    <node name="robot_state_publisher_deimos" pkg="robot_state_publisher" type="state_publisher">
+    <param name="$(arg urdf_namespace)_robot_description" command="$(find xacro)/xacro '$(find i3dr_phobos_nuclear)/urdf/phobos_nuclear_scene.urdf.xacro'" />
+    <node name="robot_state_publisher_phobos_nuclear" pkg="robot_state_publisher" type="state_publisher">
         <remap from="robot_description" to="$(arg urdf_namespace)_robot_description"/>
     </node>
     
     <!-- STEREO CAPTURE -->
     <include file="$(find i3dr_stereo_camera)/launch/stereo_capture.launch">
         <!-- camera startup settings -->
-        <arg name="exposure" value="20000"/>
+        <arg name="exposure" value="50000"/>
         <arg name="gain" value="0"/>
         <arg name="fps" value="1"/>
         <!-- camera calibration files-->
@@ -56,7 +56,7 @@
     <!-- STEREO CALIBRATION -->
     <include if="$(arg calibrate)" file="$(find i3dr_stereo_camera)/launch/stereo_calibration.launch">
         <arg name="split_laser" value="$(arg split_laser)"/>
-        <arg name="camera_namespace" value="$(arg camera_name)"/>
+        <arg name="camera_namespace" value="$(arg camera_namespace)"/>
         <arg name="multi_board" value="true" />
         <arg name="grid_rows" value="8" />
     </include>
@@ -71,7 +71,7 @@
         <!-- algorithm 0: OpenCV block -->
         <!-- algorithm 1: OpenCV SGBM -->
         <!-- algorithm 2: JR SGM -->
-        <arg name="stereo_algorithm" value="0" />
+        <arg name="stereo_algorithm" value="2" />
 
         <!-- maximum depth value (m) -->
         <!-- reduce this if RTabMap is showing flat image in back of 3D -->
