@@ -24,28 +24,29 @@
     <arg if="$(eval camera_type == 1)" name="camera_left_serial" default="phobos_nuclear_l"/>
     
     <!-- this should not change as it is the namespace of frames in the urdf-->
-    <arg name="urdf_namespace" value="phobos_nuclear"/>
+    <arg name="camera_model" default="$(arg camera_namespace)"/>
 
     <!-- SETUP ROBOT MODEL -->
-    <param name="$(arg urdf_namespace)_robot_description" command="$(find xacro)/xacro '$(find i3dr_phobos_nuclear)/urdf/phobos_nuclear_scene.urdf.xacro'" />
+    <param name="$(arg camera_model)_robot_description" command="$(find xacro)/xacro '$(find i3dr_phobos_nuclear)/urdf/phobos_nuclear_scene.urdf.xacro'" />
     <node name="robot_state_publisher_phobos_nuclear" pkg="robot_state_publisher" type="state_publisher">
-        <remap from="robot_description" to="$(arg urdf_namespace)_robot_description"/>
+        <remap from="robot_description" to="$(arg camera_model)_robot_description"/>
     </node>
     
     <!-- STEREO CAPTURE -->
     <include file="$(find i3dr_stereo_camera)/launch/stereo_capture.launch">
         <!-- camera startup settings -->
-        <arg name="exposure" value="50000"/>
+        <arg name="exposure" value="40000"/>
         <arg name="gain" value="0"/>
         <arg name="fps" value="1"/>
         <!-- camera calibration files-->
         <arg name="camera_info_right" value="file://$(find i3dr_phobos_nuclear)/calibration/phobos_nuclear_right.yaml" />
         <arg name="camera_info_left" value="file://$(find i3dr_phobos_nuclear)/calibration/phobos_nuclear_left.yaml" />
         <!-- frame id -->
-        <arg name="frame_id" value="$(arg urdf_namespace)_depth_optical_frame" />
+        <arg name="frame_id" value="$(arg camera_model)_depth_optical_frame" />
 
         <!-- 0=TIS, 1=Basler -->
         <arg name="camera_type" value="$(arg camera_type)"/>
+        <arg name="binning" value="1"/>
 
         <arg name="camera_namespace" value="$(arg camera_namespace)"/>
         <arg name="camera_right_serial" value="$(arg camera_right_serial)"/>
@@ -71,16 +72,16 @@
         <!-- algorithm 0: OpenCV block -->
         <!-- algorithm 1: OpenCV SGBM -->
         <!-- algorithm 2: JR SGM -->
-        <arg name="stereo_algorithm" value="2" />
+        <arg name="stereo_algorithm" value="0" />
 
         <!-- maximum depth value (m) -->
         <!-- reduce this if RTabMap is showing flat image in back of 3D -->
-        <arg name="depth_max" default="3" />
+        <arg name="depth_max" default="6" />
 
         <arg name="gui" value="false"/>
         <arg name="split_laser" value="$(arg split_laser)"/>
         <arg name="camera_namespace" value="$(arg camera_namespace)"/>
-        <arg name="frame_id" value="$(arg urdf_namespace)_depth_optical_frame" />
+        <arg name="frame_id" value="$(arg camera_model)_depth_optical_frame" />
     </include>
 
     <!-- DISPLAY -->
