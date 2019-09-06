@@ -4,18 +4,9 @@ Copyright (c) 2019, I3D Robotics Ltd.
 -->
 
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
-    <xacro:macro name="i3dr_phobos_nuclear" params="camera_name:=phobos_nuclear en_mesh:=false">
-        <xacro:property name="height" value="0.045"/>
-        <xacro:property name="width" value="0.305"/>
-        <xacro:property name="length" value="0.13"/>
-        <xacro:property name="mesh_file" value="package://i3dr_phobos_nuclear/mesh/phobos_nuclear.stl"/>
-        <xacro:property name="mesh_offset_xyz" value="0 0 0"/>
-        <xacro:property name="mesh_offset_rpy" value="0 0 ${-pi/2}"/>
-        <xacro:property name="box_offset_xyz" value="${(length/2)-(height/2)} 0 0"/>
-        <xacro:property name="box_offset_rpy" value="0 0 0"/>
-
-        <xacro:property name="toe_in_l" value="0"/>
-        <xacro:property name="toe_in_r" value="0"/>
+    <xacro:macro name="i3dr_phobos_nuclear" params="camera_name:=phobos_nuclear">
+        <xacro:property name="camerabar_mesh_file" value="package://i3dr_phobos_nuclear/mesh/camerabar_s.stl"/>
+        <xacro:property name="interfacing_plate_mesh_file" value="package://i3dr_phobos_nuclear/mesh/interfacing_plate_s.stl"/>
 
         <xacro:property name="fov_rad" value="${62.8 * pi/180.0}"/>
         <xacro:property name="sim_w" value="320"/>
@@ -33,27 +24,31 @@ Copyright (c) 2019, I3D Robotics Ltd.
 
         <link name="${camera_name}_depth_optical_frame" />
 
-        <link name="${camera_name}_base_link" >
+        <link name="${camera_name}_interface_plate_link">
             <visual>
-                <xacro:if value="${(en_mesh == 'true')}">
-                    <origin xyz="${mesh_offset_xyz}" rpy="${mesh_offset_rpy}"/>
-                </xacro:if>
-                <xacro:if value="${(en_mesh == 'false')}">
-                    <origin xyz="${box_offset_xyz}" rpy="${box_offset_rpy}"/>
-                </xacro:if>
+                <origin xyz="0 0 0" rpy="0 0 0"/>
                 <geometry>
-                    <xacro:if value="${(en_mesh == 'true')}">
-                        <mesh filename="${mesh_file}"/>
-                    </xacro:if>
-                    <xacro:if value="${(en_mesh == 'false')}">
-                        <box size="${length} ${width} ${height}"/>
-                    </xacro:if>
+                    <mesh filename="${interfacing_plate_mesh_file}"/>
                 </geometry>
                 <material name="${camera_name}_camera_colour">
                     <color rgba="0.1 0.1 0.1 1"/>
                 </material>
             </visual>
         </link>
+
+        <link name="${camera_name}_camerabar_link">
+            <visual>
+                <origin xyz="0 0 0" rpy="0 0 0"/>
+                <geometry>
+                    <mesh filename="${camerabar_mesh_file}"/>
+                </geometry>
+                <material name="${camera_name}_camera_colour">
+                    <color rgba="0.1 0.1 0.1 1"/>
+                </material>
+            </visual>
+        </link>
+
+        <link name="${camera_name}_base_link" />
 
         <link name="${camera_name}_mount_point_1"/>
         <link name="${camera_name}_mount_point_2"/>
@@ -65,20 +60,20 @@ Copyright (c) 2019, I3D Robotics Ltd.
         <joint name="${camera_name}_right_camera_joint" type="fixed">
             <parent link="${camera_name}_center"/>
             <child link="${camera_name}_cameraRight"/>
-            <origin xyz="0 ${0.125} 0" rpy="0 0 ${pi/2}" />
+            <origin xyz="${0.125} 0 0" rpy="0 0 0" />
         </joint>
 
         <joint name="${camera_name}_left_camera_joint" type="fixed">
             <parent link="${camera_name}_center"/>
             <child link="${camera_name}_cameraLeft"/>
-            <origin xyz="0 ${-0.125} 0" rpy="0 0 ${pi/2}" />
+            <origin xyz="${-0.125} 0 0" rpy="0 0 0" />
         </joint>
 
         <joint name="${camera_name}_left_optical_joint" type="fixed">
             <parent link="${camera_name}_cameraLeft"/>
             <child link="${camera_name}_cameraLeft_optical"/>
             <!-- Correct for the optical frame orientation -->
-            <origin xyz="0 0 0" rpy="${-pi/2} 0 ${(-pi/2)-(toe_in_l * (pi/180))}" />
+            <origin xyz="0 0 0" rpy="${-pi/2} 0 0" />
         </joint>
         <joint name="${camera_name}_left_sim_joint" type="fixed">
             <parent link="${camera_name}_cameraLeft"/>
@@ -90,11 +85,11 @@ Copyright (c) 2019, I3D Robotics Ltd.
             <parent link="${camera_name}_cameraRight"/>
             <child link="${camera_name}_cameraRight_optical"/>
             <!-- Correct for the optical frame orientation -->
-            <origin xyz="0 0 0" rpy="${-pi/2} 0 ${(-pi/2)+(toe_in_r * (pi/180))}" />
+            <origin xyz="0 0 0" rpy="${-pi/2} 0 0" />
         </joint>
 
         <joint name="${camera_name}_depth_optical_joint" type="fixed">
-            <parent link="${camera_name}_cameraLeft_sim"/>
+            <parent link="${camera_name}_cameraLeft_optical"/>
             <child link="${camera_name}_depth_optical_frame"/>
             <origin xyz="0 0 0" rpy="0 0 0" />
         </joint>
@@ -102,7 +97,19 @@ Copyright (c) 2019, I3D Robotics Ltd.
         <joint name="${camera_name}_mount_center_joint" type="fixed">
             <parent link="${camera_name}_base_link"/>
             <child link="${camera_name}_center"/>
-            <origin xyz="0.017675 0 0.167" rpy="${pi/2} 0 0" />
+            <origin xyz="0 -0.001 0.175" rpy="${pi/2} ${-pi/2} 0" />
+        </joint>
+
+        <joint name="${camera_name}_interface_plate_joint" type="fixed">
+            <parent link="${camera_name}_base_link"/>
+            <child link="${camera_name}_interface_plate_link"/>
+            <origin xyz="0 0 0" rpy="0 0 ${pi}" />
+        </joint>
+
+        <joint name="${camera_name}_camerabar_joint" type="fixed">
+            <parent link="${camera_name}_interface_plate_link"/>
+            <child link="${camera_name}_camerabar_link"/>
+            <origin xyz="0.0223 -0.0186 0.015" rpy="0 0 0" />
         </joint>
 
         <joint name="${camera_name}_mount_point_1_joint" type="fixed">
