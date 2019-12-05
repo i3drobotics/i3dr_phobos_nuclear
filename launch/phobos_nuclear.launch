@@ -2,18 +2,26 @@
 <!--XML-->
 <launch>
     <!-- SETUP ARGUMENTS -->
+    <!-- algorithm 0: OpenCV block -->
+    <!-- algorithm 1: OpenCV SGBM -->
+    <!-- algorithm 2: I3DR SGM -->
+    <arg name="stereo_algorithm" default="0" />
     <!-- enable/disable rviz -->
     <arg name="rviz" default="false" />
     <!-- enable/disable calibration -->
     <arg name="calibrate" default="false"/>
     <!-- is camera with split laser functionality being used -->
     <arg name="split_laser" default="true"/>
-    <!-- enable/disbale stereo matching (3D generation) -->
+    <!-- enable/disable stereo matching (3D generation) -->
     <arg name="stereo_match" default="true"/>
     <!-- 0=TIS, 1=Basler -->
     <arg name="camera_type" default="1"/>
     <!-- namespace for camera -->
     <arg name="camera_namespace" default="phobos_nuclear"/>
+
+    <!-- camera calibration files -->
+    <arg name="cameraLeft_info_url"  default="file://$(find i3dr_phobos_nuclear)/calibration/05-12-19/phobos_nuclear_left.yaml" />
+    <arg name="cameraRight_info_url" default="file://$(find i3dr_phobos_nuclear)/calibration/05-12-19/phobos_nuclear_right.yaml" />
 
     <!-- Be sure to change this to your cameras id -->
     <!-- TIS -->
@@ -39,8 +47,8 @@
         <arg name="gain" value="0"/>
         <arg name="fps" value="1"/>
         <!-- camera calibration files-->
-        <arg name="camera_info_right" value="file://$(find i3dr_phobos_nuclear)/calibration/phobos_nuclear_right.yaml" />
-        <arg name="camera_info_left" value="file://$(find i3dr_phobos_nuclear)/calibration/phobos_nuclear_left.yaml" />
+        <arg name="camera_info_right" value="$(arg cameraRight_info_url)" />
+        <arg name="camera_info_left" value="$(arg cameraLeft_info_url)" />
         <!-- frame id -->
         <arg name="frame_id" value="$(arg camera_model)_depth_optical_frame" />
 
@@ -71,17 +79,23 @@
         <!-- http://wiki.ros.org/stereo_image_proc/Tutorials/ChoosingGoodStereoParameters -->
         <!-- algorithm 0: OpenCV block -->
         <!-- algorithm 1: OpenCV SGBM -->
-        <!-- algorithm 2: JR SGM -->
-        <arg name="stereo_algorithm" value="0" />
+        <!-- algorithm 2: I3DR SGM -->
+        <arg name="stereo_algorithm" value="$(arg stereo_algorithm)" />
 
         <!-- maximum depth value (m) -->
-        <!-- reduce this if RTabMap is showing flat image in back of 3D -->
-        <arg name="depth_max" default="6" />
+        <arg name="depth_max" value="6" />
 
         <arg name="gui" value="false"/>
         <arg name="split_laser" value="$(arg split_laser)"/>
         <arg name="camera_namespace" value="$(arg camera_namespace)"/>
         <arg name="frame_id" value="$(arg camera_model)_depth_optical_frame" />
+
+        <arg if="$(eval stereo_algorithm == 0)" name="min_disparity" value="147" />
+        <arg if="$(eval stereo_algorithm == 0)" name="disparity_range" value="480" />
+        <arg if="$(eval stereo_algorithm == 1)" name="min_disparity" value="147" />
+        <arg if="$(eval stereo_algorithm == 1)" name="disparity_range" value="480" />
+        <arg if="$(eval stereo_algorithm == 2)" name="min_disparity" value="400" />
+        <arg if="$(eval stereo_algorithm == 2)" name="disparity_range" value="530" />
     </include>
 
     <!-- DISPLAY -->
