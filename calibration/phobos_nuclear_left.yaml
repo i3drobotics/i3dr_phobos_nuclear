@@ -2,7 +2,7 @@
 ---
 image_width: 2448
 image_height: 2048
-camera_name: leftCamera
+camera_name: phobos_nuclear_l
 camera_matrix: !!opencv-matrix
    rows: 3
    cols: 3
