@@ -11,22 +11,18 @@
     <!-- enable/disable calibration -->
     <arg name="calibrate" default="false"/>
     <!-- is camera with split laser functionality being used -->
-<<<<<<< HEAD
     <arg name="split_laser" default="false"/>
     <!-- enable/disbale stereo matching (3D generation) -->
-=======
-    <arg name="split_laser" default="true"/>
-    <!-- enable/disable stereo matching (3D generation) -->
->>>>>>> 353e710657f449be4db3dcf51a85739592eac249
     <arg name="stereo_match" default="true"/>
     <!-- 0=TIS, 1=Basler -->
     <arg name="camera_type" default="1"/>
     <!-- namespace for camera -->
     <arg name="camera_namespace" default="phobos_nuclear"/>
+    <arg name="imu" default="true"/>
 
     <!-- camera calibration files -->
-    <arg name="cameraLeft_info_url"  default="file://$(find i3dr_phobos_nuclear)/calibration/05-12-19/phobos_nuclear_left.yaml" />
-    <arg name="cameraRight_info_url" default="file://$(find i3dr_phobos_nuclear)/calibration/05-12-19/phobos_nuclear_right.yaml" />
+    <arg name="cameraLeft_info_url"  default="file://$(find i3dr_phobos_nuclear)/calibration/25-02-2020/phobos_nuclear_right.yaml" />
+    <arg name="cameraRight_info_url" default="file://$(find i3dr_phobos_nuclear)/calibration/25-02-2020/phobos_nuclear_left.yaml" />
 
     <!-- Be sure to change this to your cameras id -->
     <!-- TIS -->
@@ -52,14 +48,16 @@
         <arg name="gain" value="0"/>
         <arg name="fps" value="1"/>
         <!-- camera calibration files-->
-        <arg name="camera_info_right" value="file://$(find i3dr_phobos_nuclear)/calibration/24-01-2020/phobos_nuclear_right.yaml" />
-        <arg name="camera_info_left" value="file://$(find i3dr_phobos_nuclear)/calibration/24-01-2020/phobos_nuclear_left.yaml" />
+        <arg name="camera_info_right" value="$(arg cameraRight_info_url)" />
+        <arg name="camera_info_left" value="$(arg cameraLeft_info_url)" />
         <!-- frame id -->
         <arg name="frame_id" value="$(arg camera_model)_depth_optical_frame" />
 
         <!-- 0=TIS, 1=Basler -->
         <arg name="camera_type" value="$(arg camera_type)"/>
         <arg name="binning" value="1"/>
+        <arg name="reverse_x" value="false"/>
+        <arg name="reverse_y" value="true"/>
 
         <arg name="camera_namespace" value="$(arg camera_namespace)"/>
         <arg name="camera_right_serial" value="$(arg camera_right_serial)"/>
@@ -71,7 +69,7 @@
     <include if="$(arg calibrate)" file="$(find i3dr_stereo_camera)/launch/stereo_calibration.launch">
         <arg name="split_laser" value="$(arg split_laser)"/>
         <arg name="camera_namespace" value="$(arg camera_namespace)"/>
-        <arg name="multi_board" value="true" />
+        <arg name="multi_board" value="false" />
         <arg name="grid_rows" value="8" />
     </include>
 
@@ -88,20 +86,27 @@
         <arg name="stereo_algorithm" value="$(arg stereo_algorithm)" />
 
         <!-- maximum depth value (m) -->
-        <arg name="depth_max" value="6" />
+        <arg name="depth_max" value="3" />
+        <arg name="depth_min" value="0.5" />
 
         <arg name="gui" value="false"/>
         <arg name="split_laser" value="$(arg split_laser)"/>
         <arg name="camera_namespace" value="$(arg camera_namespace)"/>
         <arg name="frame_id" value="$(arg camera_model)_depth_optical_frame" />
 
-        <arg if="$(eval stereo_algorithm == 0)" name="min_disparity" value="147" />
-        <arg if="$(eval stereo_algorithm == 0)" name="disparity_range" value="480" />
-        <arg if="$(eval stereo_algorithm == 1)" name="min_disparity" value="147" />
-        <arg if="$(eval stereo_algorithm == 1)" name="disparity_range" value="480" />
-        <arg if="$(eval stereo_algorithm == 2)" name="min_disparity" value="400" />
-        <arg if="$(eval stereo_algorithm == 2)" name="disparity_range" value="530" />
+        <arg name="min_disparity" value="-500" />
+        <arg name="disparity_range" value="480" />
     </include>
+
+    <include if="$(arg imu)" file="$(find rosserial_adafruit_bno055)/launch/rosserial_adafruit_bno055.launch">
+        <arg name="port" value="/dev/ttyACM0"/>
+        <arg name="frame_id" value="$(arg camera_model)_base_link"/>
+        <arg name="namespace" value=""/>
+    </include>
+
+    <node if="$(arg imu)" name="pn_imu_filter" pkg="imu_filter_madgwick" type="imu_filter_node" output="screen">
+        <param name="use_magnetic_field_msg" value="true"/>
+    </node>
 
     <!-- DISPLAY -->
     <!-- run rviz with config file -->
