@@ -18,7 +18,7 @@
     <arg name="camera_type" default="1"/>
     <!-- namespace for camera -->
     <arg name="camera_namespace" default="phobos_nuclear"/>
-    <arg name="imu" default="true"/>
+    <arg name="imu" default="false"/>
 
     <!-- camera calibration files -->
     <arg name="cameraLeft_info_url"  default="file://$(find i3dr_phobos_nuclear)/calibration/25-02-2020/phobos_nuclear_right.yaml" />
