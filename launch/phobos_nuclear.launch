@@ -89,7 +89,6 @@
         <arg name="depth_max" value="3" />
         <arg name="depth_min" value="0.5" />
 
-        <arg name="gui" value="false"/>
         <arg name="split_laser" value="$(arg split_laser)"/>
         <arg name="camera_namespace" value="$(arg camera_namespace)"/>
         <arg name="frame_id" value="$(arg camera_model)_depth_optical_frame" />
